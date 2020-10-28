@@ -7,5 +7,6 @@ bitcoin.createNewTransaction(100,'JOHN','TOM');
 bitcoin.createNewTransaction(50,'TOM','JANE');
 bitcoin.createNewTransaction(10,'JANE','JOHN');
 bitcoin.createNewBlock(5678,'ABABABABAB','A1A2A3A4A5');
+bitcoin.createNewBlock(5678,'ABABABABAB','A1A2A3A4A5');
 console.log(bitcoin);
 console.log(bitcoin.chain[1]); // 1번쨰 인덱스 체인 확인

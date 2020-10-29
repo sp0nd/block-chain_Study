@@ -1,4 +1,9 @@
 const sha256 = require('sha256');
+const currentNodeUrl = process.argv[3];
+function Blockchain(){
+    this.currentNodeUrl =currentNodeUrl;
+    this.networkNodes=[];
+}
 function Blockchain(){
     //채굴한 모든 블록을 저장하는 배열 선언
     this.chain = [];

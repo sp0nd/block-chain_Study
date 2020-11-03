@@ -1,16 +1,16 @@
 const sha256 = require('sha256');
 const currentNodeUrl = process.argv[3];
-function Blockchain(){
-    this.currentNodeUrl =currentNodeUrl;
-    this.networkNodes=[];
-}
+
 function Blockchain(){
     //채굴한 모든 블록을 저장하는 배열 선언
     this.chain = [];
     //블록에 아직 저장되지 않은 모든 트랜잭션을 저장하는 배열 선언
     this.newTransactions = [];
     // Genesis 블록을 만들기 위해 임의의 값으로 생성
-	this.createNewBlock(100, '0', '0');
+    this.createNewBlock(100, '0', '0');
+    
+    this.currentNodeUrl =currentNodeUrl;
+    this.networkNodes=[];
 
 }
 //nonce : 자격증명(PoW)을 통해 찾아진 숫자 값

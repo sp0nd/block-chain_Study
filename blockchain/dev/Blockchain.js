@@ -1,4 +1,16 @@
+//chainisvalid 메소드 구현
+//체인이 유효한지 확인하는 메소드
+
+
+
+
+
+
+
+
+
 const sha256 = require('sha256');
+const { v1: uuid } = require('uuid')
 const currentNodeUrl = process.argv[3];
 
 function Blockchain(){
@@ -8,7 +20,7 @@ function Blockchain(){
     this.newTransactions = [];
     // Genesis 블록을 만들기 위해 임의의 값으로 생성
     this.createNewBlock(100, '0', '0');
-    
+
     this.currentNodeUrl =currentNodeUrl;
     this.networkNodes=[];
 
@@ -48,9 +60,11 @@ Blockchain.prototype.createNewTransaction = function(amount,sender,recipient){
         amount : amount,
         sender : sender,
         recipient : recipient,
+        transactionId: uuid().split('-').join('')
     };
-    this.newTransactions.push(newTransaction);
-    return this.getLastBlock()[`index`]+1;
+    // this.newTransactions.push(newTransaction);
+    // return this.getLastBlock()[`index`]+1;
+    return newTransaction;
 }
 Blockchain.prototype.hashBlock = function(preBlockHash,curBlockData,nonce)
 {
@@ -70,5 +84,86 @@ Blockchain.prototype.proofOfWork = function(preBlockHash,curBlockData){
     }
     return nonce;
 }
+//new 트랜잭션을 배열에 추가
+Blockchain.prototype.addTransactionTonewTransactions= 
+function(transactionObj){
+    this.newTransactions.push(transactionObj);
+    return this.getLastBlock()[`index`] + 1;
+}
+Blockchain.prototype.chainIsValid = function(blockchain){
+    let validChain =true;
+    //모든 블록을 순회하며 직전 블록의 해쉬 함수값과 현재 블록의 해쉬값을 비교 확인
+    for(var i= 1; i <blockchain.length; i++) {
+        const currentBlock = blockchain[i];
+        const prevBlock = blockchain[i-1];
+        const blockHash = this.hashBlock(
+            prevBlock['hash'], {
+                transactions: currentBlock['transactions'],
+                index: currentBlock['index']
+            },
+            currentBlock['nonce']
+        );
+        if(blockHash.substring(0,4)!=='0000')
+            validChain = false;
+        if(currentBlock['prevBlockHash']!== prevBlock['hash'])
+            validChain = false;
+    };
+    //최초 생성한 genesis 블록 검증
+    const genesisBlock = blockchain[0];
+    const correctNonce = genesisBlock['nonce'] === 100;
+    const correctPreviousBlockhash = genesisBlock['prevBlockHash'] === '0';
+    const correctHash = genesisBlock['hash'] ==='0';
+    const correctTransactions = genesisBlock['transactions'].length ===0;
+
+    //유효한 genesis 블록을 가지고 있지 않으면
+    if(!correctNonce || !correctPreviousBlockhash || !correctHash || !correctTransactions)
+        validChain = false;
+
+    return validChain;
+};
+Blockchain.prototype.getBlock = function(blockHash){
+    let correctBlock = null;
+    this.chain.forEach(block => {
+        if(block.hash === blockHash)
+            correctBlock = block;
+    });
+    return correctBlock;
+};
+Blockchain.prototype.getTransaction = function(transactionId){
+    let correctTransaction =null;
+    let correctBlock = null;
+    this.chain.forEach(block => {
+        block.transactions.forEach(transaction => {
+            if(transaction.transactionId === transactionId){
+            correctTransaction = transaction;
+            correctBlock = block;
+            };
+        });
+    });
+    return{
+        transaction: correctTransaction,
+        block: correctBlock
+    };
+};
+Blockchain.prototype.getAddressData = function(address) {
+    const addressTransactions=[];
+    this.chain.forEach(block=> {
+        block.transactions.forEach(transaction => {
+            if(transaction.sender === address || transaction.recipient ===address){
+                addressTransactions.push(transaction);
+            };
+        });
+    });
+    let balance = 0;
+    addressTransactions.forEach(transaction => {
+        if(transaction.recipient === address) balance+=transaction.amount;
+        else if(transaction.sender === address) balance -= transaction.amount;
+    });
+    return {
+        addressTransactions: addressTransactions,
+        addressBalance: balance
+    };
+};
+
 
 module.exports =Blockchain;
